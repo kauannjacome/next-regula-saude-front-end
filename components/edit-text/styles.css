@@ -1,0 +1,379 @@
+/* ============================================
+   SCOPED EDITOR STYLES - React version
+   ============================================ */
+
+@media print {
+  @page { margin: 0; size: auto; }
+  .et-editor-root {
+    background: white !important;
+    overflow: visible !important;
+    height: auto !important;
+    position: static !important;
+  }
+  .et-editor-root header,
+  .et-editor-root footer { display: none !important; }
+  .et-editor-root .shadow-lg { box-shadow: none !important; }
+  /* Hide spacers */
+  .page-spacer { display: none !important; }
+}
+
+/* Espacador de pagina — bloco invisivel que empurra conteudo alem das quebras */
+.et-editor-root .page-spacer {
+  display: block !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  caret-color: transparent;
+}
+
+.et-editor-root .dynamic-variable-chip {
+  background-color: #e8f0fe;
+  color: #1967d2;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin: 0 2px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9em;
+  font-weight: inherit;
+  font-style: inherit;
+  text-decoration: inherit;
+  white-space: nowrap;
+  display: inline-block;
+  user-select: none;
+  vertical-align: baseline;
+}
+
+/* Scrollbar */
+.et-editor-root ::-webkit-scrollbar { width: 8px; height: 8px; }
+.et-editor-root ::-webkit-scrollbar-track { background: transparent; }
+.et-editor-root ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+.et-editor-root ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+/* Editor content styles */
+.et-editor-root [contenteditable] table {
+  cursor: text;
+  border-collapse: collapse;
+}
+.et-editor-root [contenteditable] td,
+.et-editor-root [contenteditable] th {
+  position: relative;
+  vertical-align: top;
+}
+.et-editor-root [contenteditable] td:focus,
+.et-editor-root [contenteditable] th:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+/* Contain all content within page */
+.et-editor-root [contenteditable] {
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.et-editor-root [contenteditable] * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Image styles */
+.et-editor-root [contenteditable] img {
+  cursor: pointer;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Blockquote */
+.et-editor-root [contenteditable] blockquote {
+  border-left: 4px solid #3b82f6;
+  margin: 12px 0;
+  padding: 8px 16px;
+  background-color: #f0f7ff;
+  color: #374151;
+  font-style: italic;
+}
+
+/* Page break marker */
+.et-editor-root .page-break-marker {
+  display: block;
+  width: 100%;
+  border: none;
+  border-top: 2px dashed #94a3b8;
+  margin: 16px 0;
+  padding: 0;
+  page-break-after: always;
+  position: relative;
+}
+.et-editor-root .page-break-marker::after {
+  content: 'Quebra de Pagina';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 0 8px;
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* TOC */
+.et-editor-root .toc-container {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.et-editor-root .toc-container .toc-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3b82f6;
+}
+.et-editor-root .toc-container a {
+  color: #2563eb;
+  text-decoration: none;
+  display: block;
+  padding: 3px 0;
+  font-size: 14px;
+}
+.et-editor-root .toc-container a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Dark mode */
+.et-editor-root.dark-mode header,
+.et-editor-root.dark-mode footer {
+  background-color: #252526 !important;
+  border-color: #3c3c3c !important;
+  color: #cccccc !important;
+}
+.et-editor-root.dark-mode .bg-white {
+  background-color: #2d2d2d !important;
+}
+.et-editor-root.dark-mode .bg-gray-50 {
+  background-color: #252526 !important;
+}
+.et-editor-root.dark-mode .border-gray-200 {
+  border-color: #3c3c3c !important;
+}
+.et-editor-root.dark-mode .text-gray-700 {
+  color: #cccccc !important;
+}
+.et-editor-root.dark-mode .text-gray-600 {
+  color: #aaaaaa !important;
+}
+.et-editor-root.dark-mode .text-gray-500 {
+  color: #888888 !important;
+}
+.et-editor-root.dark-mode select,
+.et-editor-root.dark-mode input[type="text"],
+.et-editor-root.dark-mode input[type="number"] {
+  background-color: #3c3c3c !important;
+  color: #d4d4d4 !important;
+  border-color: #555555 !important;
+}
+.et-editor-root.dark-mode [contenteditable] blockquote {
+  background-color: #1e2a3a;
+  color: #a0b4c8;
+  border-left-color: #2563eb;
+}
+.et-editor-root.dark-mode .page-break-marker {
+  border-top-color: #555555;
+}
+.et-editor-root.dark-mode .page-break-marker::after {
+  background: #1e1e1e;
+  color: #666666;
+}
+.et-editor-root.dark-mode .toc-container {
+  background-color: #1e2a3a;
+  border-color: #334155;
+}
+.et-editor-root.dark-mode .toc-container .toc-title {
+  color: #e2e8f0;
+}
+.et-editor-root.dark-mode .toc-container a {
+  color: #60a5fa;
+}
+/* Dark mode: tables */
+.et-editor-root.dark-mode [contenteditable] th {
+  background-color: #2d2d2d !important;
+  color: #d4d4d4 !important;
+}
+.et-editor-root.dark-mode [contenteditable] td {
+  background-color: transparent !important;
+  color: #d4d4d4 !important;
+}
+.et-editor-root.dark-mode [contenteditable] td,
+.et-editor-root.dark-mode [contenteditable] th {
+  border-color: #555555 !important;
+}
+/* Dark mode: page break marker background */
+.et-editor-root.dark-mode [contenteditable] blockquote {
+  background-color: #1e2a3a !important;
+}
+/* Dark mode: QR code background */
+.et-editor-root.dark-mode [contenteditable] img.qr-code {
+  border-color: #555555;
+}
+
+/* Find & Replace highlights */
+.et-editor-root [contenteditable] mark.find-match {
+  background-color: #fde68a;
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+.et-editor-root [contenteditable] mark.find-match-active {
+  background-color: #fb923c;
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+/* Highlight colors */
+.et-editor-root [contenteditable] mark {
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+/* Image wrapping modes */
+.et-editor-root [contenteditable] img[data-wrap="inline"] {
+  display: inline;
+  float: none;
+  vertical-align: middle;
+  margin: 4px 2px;
+}
+.et-editor-root [contenteditable] img[data-wrap="square-left"] {
+  display: block;
+  float: left;
+  margin: 4px 12px 4px 0;
+  clear: left;
+}
+.et-editor-root [contenteditable] img[data-wrap="square-right"] {
+  display: block;
+  float: right;
+  margin: 4px 0 4px 12px;
+  clear: right;
+}
+.et-editor-root [contenteditable] img[data-wrap="top-bottom"] {
+  display: block;
+  float: none;
+  margin: 10px auto;
+  clear: both;
+}
+.et-editor-root [contenteditable] img[data-wrap="behind"] {
+  position: absolute;
+  z-index: 1;
+  pointer-events: auto;
+}
+.et-editor-root [contenteditable] img[data-wrap="front"] {
+  position: absolute;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+/* QR Code styling */
+.et-editor-root [contenteditable] img.qr-code {
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 4px;
+  background: white;
+  max-width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  object-fit: contain;
+}
+/* QR Code dentro de tabelas: respeitar limites da celula */
+.et-editor-root [contenteditable] td img.qr-code,
+.et-editor-root [contenteditable] th img.qr-code {
+  max-width: 100%;
+  width: auto;
+  height: auto;
+}
+/* QR Code dentro de listas: respeitar limites do item */
+.et-editor-root [contenteditable] li img.qr-code {
+  max-width: 100%;
+  width: auto;
+  height: auto;
+}
+
+/* Table inside editor */
+.et-editor-root [contenteditable] table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 100%;
+  margin: 10px 0;
+  table-layout: fixed;
+  overflow: hidden;
+  word-wrap: break-word;
+}
+.et-editor-root [contenteditable] td,
+.et-editor-root [contenteditable] th {
+  border: 1px solid #d1d5db;
+  padding: 8px;
+  min-width: 40px;
+  vertical-align: top;
+}
+.et-editor-root [contenteditable] th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+/* Ensure toolbar header and panels stay above all editor overlays */
+.et-editor-root > header {
+  position: relative;
+  z-index: 100;
+}
+.et-editor-root > footer {
+  position: relative;
+  z-index: 100;
+}
+
+/* Header/Footer zones */
+.et-editor-root .hf-zone-editing {
+  background: white;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+/* Drag & drop body highlight */
+.et-editor-root .drag-body-active {
+  outline: 2px dashed #3b82f6;
+  outline-offset: -2px;
+  background: rgba(59, 130, 246, 0.03);
+}
+
+/* Resizer overlay fix */
+.et-editor-root .et-resizer-overlay {
+  pointer-events: none;
+}
+.et-editor-root .et-resizer-overlay .resizer-handle {
+  pointer-events: auto;
+}
+
+/* Print improvements */
+@media print {
+  .et-editor-root .page-break-marker {
+    display: block !important;
+    border: none !important;
+    page-break-after: always !important;
+  }
+  .et-editor-root .page-break-marker::after {
+    display: none !important;
+  }
+  .et-editor-root img[data-wrap="behind"],
+  .et-editor-root img[data-wrap="front"] {
+    position: absolute !important;
+  }
+}

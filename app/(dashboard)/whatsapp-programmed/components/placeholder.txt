@@ -1,0 +1,5 @@
+// This file will be replaced by the main page with Tabs
+// I will create:
+// components/templates-tab.tsx
+// components/automation-tab.tsx
+// components/settings-tab.tsx

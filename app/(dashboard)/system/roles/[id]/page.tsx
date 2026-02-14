@@ -1,0 +1,363 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
+import { ArrowLeft, Save } from 'lucide-react'
+import { toast } from 'sonner'
+
+interface Permission {
+  id: string
+  name: string
+  resource: string
+  action: string
+  description: string | null
+}
+
+interface GroupedPermissions {
+  [resource: string]: Permission[]
+}
+
+interface TenantRole {
+  id: string
+  name: string
+  displayName: string
+  description: string | null
+  color: string
+  isSystem: boolean
+  permissions: Permission[]
+}
+
+export default function RoleFormPage() {
+  const router = useRouter()
+  const params = useParams()
+  const roleId = params?.id as string
+  const isNew = roleId === 'new'
+
+  const [loading, setLoading] = useState(!isNew)
+  const [saving, setSaving] = useState(false)
+  const [role, setRole] = useState<TenantRole | null>(null)
+  const [groupedPermissions, setGroupedPermissions] = useState<GroupedPermissions>({})
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set())
+
+  const [formData, setFormData] = useState({
+    name: '',
+    displayName: '',
+    description: '',
+    color: '#3B82F6',
+  })
+
+  const loadPermissions = useCallback(async () => {
+    try {
+      const response = await fetch('/api/tenant/permissions')
+      if (!response.ok) throw new Error('Failed to load permissions')
+      
+      const data = await response.json()
+      setGroupedPermissions(data.groupedPermissions)
+    } catch (error) {
+      console.error('Error loading permissions:', error)
+      toast.error('Erro ao carregar permissões')
+    }
+  }, [])
+
+  const loadRole = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/tenant/roles/${roleId}`)
+      if (!response.ok) throw new Error('Failed to load role')
+      
+      const data = await response.json()
+      setRole(data.role)
+      setFormData({
+        name: data.role.name,
+        displayName: data.role.displayName,
+        description: data.role.description || '',
+        color: data.role.color,
+      })
+      setSelectedPermissions(new Set(data.role.permissions.map((p: Permission) => p.id)))
+    } catch (error) {
+      console.error('Error loading role:', error)
+      toast.error('Erro ao carregar role')
+    } finally {
+      setLoading(false)
+    }
+  }, [roleId])
+
+  useEffect(() => {
+    loadPermissions()
+    if (!isNew) {
+      loadRole()
+    }
+  }, [isNew, loadPermissions, loadRole])
+
+  function togglePermission(permissionId: string) {
+    const newSelected = new Set(selectedPermissions)
+    if (newSelected.has(permissionId)) {
+      newSelected.delete(permissionId)
+    } else {
+      newSelected.add(permissionId)
+    }
+    setSelectedPermissions(newSelected)
+  }
+
+  function toggleAllInResource(resource: string) {
+    const resourcePermissions = groupedPermissions[resource] || []
+    const resourcePermissionIds = resourcePermissions.map(p => p.id)
+    const allSelected = resourcePermissionIds.every(id => selectedPermissions.has(id))
+
+    const newSelected = new Set(selectedPermissions)
+    if (allSelected) {
+      resourcePermissionIds.forEach(id => newSelected.delete(id))
+    } else {
+      resourcePermissionIds.forEach(id => newSelected.add(id))
+    }
+    setSelectedPermissions(newSelected)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+
+    if (!formData.displayName.trim()) {
+      toast.error('Nome de exibição é obrigatório')
+      return
+    }
+
+    if (selectedPermissions.size === 0) {
+      toast.error('Selecione pelo menos uma permissão')
+      return
+    }
+
+    setSaving(true)
+
+    try {
+      const url = isNew ? '/api/tenant/roles' : `/api/tenant/roles/${roleId}`
+      const method = isNew ? 'POST' : 'PATCH'
+
+      const body: any = {
+        displayName: formData.displayName,
+        description: formData.description || undefined,
+        color: formData.color,
+        permissionIds: Array.from(selectedPermissions),
+      }
+
+      if (isNew) {
+        // Generate name from displayName
+        body.name = formData.displayName
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '_')
+          .replace(/^_+|_+$/g, '')
+      }
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to save role')
+      }
+
+      toast.success(isNew ? 'Role criada com sucesso' : 'Role atualizada com sucesso')
+      router.push('/system/roles')
+    } catch (error: any) {
+      console.error('Error saving role:', error)
+      toast.error(error.message || 'Erro ao salvar role')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const isSystemRole = role?.isSystem || false
+
+  return (
+    <div className="container mx-auto py-8 px-4 max-w-4xl">
+      <Button
+        variant="ghost"
+        onClick={() => router.push('/system/roles')}
+        className="mb-6"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar
+      </Button>
+
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">
+          {isNew ? 'Nova Role' : isSystemRole ? 'Visualizar Role' : 'Editar Role'}
+        </h1>
+        {isSystemRole && (
+          <p className="text-muted-foreground mt-2">
+            Roles do sistema não podem ser editadas
+          </p>
+        )}
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Informações Básicas</CardTitle>
+            <CardDescription>
+              Configure o nome e aparência da role
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="displayName">Nome de Exibição *</Label>
+              <Input
+                id="displayName"
+                value={formData.displayName}
+                onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                placeholder="Ex: Enfermeiro"
+                disabled={isSystemRole}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Descrição</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Descrição da role..."
+                disabled={isSystemRole}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="color">Cor</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  id="color"
+                  type="color"
+                  value={formData.color}
+                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                  className="w-20 h-10"
+                  disabled={isSystemRole}
+                />
+                <Input
+                  value={formData.color}
+                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                  placeholder="#3B82F6"
+                  disabled={isSystemRole}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Permissões</CardTitle>
+            <CardDescription>
+              Selecione as permissões que esta role terá
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {Object.entries(groupedPermissions).map(([resource, permissions]) => {
+                const allSelected = permissions.every(p => selectedPermissions.has(p.id))
+                const someSelected = permissions.some(p => selectedPermissions.has(p.id))
+
+                return (
+                  <div key={resource} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={`resource-${resource}`}
+                          checked={allSelected}
+                          onCheckedChange={() => toggleAllInResource(resource)}
+                          disabled={isSystemRole}
+                        />
+                        <Label
+                          htmlFor={`resource-${resource}`}
+                          className="text-base font-semibold cursor-pointer"
+                        >
+                          {resource}
+                        </Label>
+                      </div>
+                      <Badge variant={someSelected ? 'default' : 'secondary'}>
+                        {permissions.filter(p => selectedPermissions.has(p.id)).length} / {permissions.length}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ml-6">
+                      {permissions.map((permission) => (
+                        <div key={permission.id} className="flex items-start gap-2">
+                          <Checkbox
+                            id={permission.id}
+                            checked={selectedPermissions.has(permission.id)}
+                            onCheckedChange={() => togglePermission(permission.id)}
+                            disabled={isSystemRole}
+                          />
+                          <div className="flex-1">
+                            <Label
+                              htmlFor={permission.id}
+                              className="text-sm font-medium cursor-pointer"
+                            >
+                              {permission.action}
+                            </Label>
+                            {permission.description && (
+                              <p className="text-xs text-muted-foreground">
+                                {permission.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {!isSystemRole && (
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push('/system/roles')}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isNew ? 'Criar Role' : 'Salvar Alterações'}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </form>
+    </div>
+  )
+}
