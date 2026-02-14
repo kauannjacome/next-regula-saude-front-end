@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation'
-import prisma from '@/lib/prisma'
+import { auth } from '@/auth'
 import RegulationHeaderCard from '../components/regulation-header-card'
 import RegulationTabs from '../components/regulation-tabs'
 import RegulationActionsSidebar from '../components/regulation-actions-sidebar'
+
+const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
 // Fix for Next.js 15+ dynamic params
 export default async function RegulationDetailsPage({
@@ -17,55 +19,21 @@ export default async function RegulationDetailsPage({
     notFound()
   }
 
-  // Fetch regulation with all related data
-  const regulation = await prisma.regulation.findUnique({
-    where: { id: regulationId },
-    include: {
-      citizen: true,
-      responsible: true,
-      creator: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-      analyzer: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-      printer: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-      folder: true,
-      supplier: true,
-      cares: {
-        include: {
-          care: {
-            select: {
-              id: true,
-              name: true,
-              acronym: true,
-            },
-          },
-        },
-      },
-      notifications: {
-        where: { deletedAt: null },
-        orderBy: { createdAt: 'desc' },
-      },
-      uploads: {
-        orderBy: { createdAt: 'desc' },
-      },
-    },
+  const session = await auth()
+  if (!session?.accessToken) {
+    notFound()
+  }
+
+  const res = await fetch(`${API_URL}/api/regulations/${regulationId}`, {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+    cache: 'no-store',
   })
+
+  if (!res.ok) {
+    notFound()
+  }
+
+  const { data: regulation } = await res.json()
 
   if (!regulation || regulation.deletedAt) {
     notFound()

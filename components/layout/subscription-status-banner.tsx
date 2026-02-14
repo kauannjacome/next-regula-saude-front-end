@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { AlertTriangle, Clock, CreditCard } from 'lucide-react'
-import { SubscriptionStatus } from '@/lib/generated/prisma'
+type SubscriptionStatus = 'ACTIVE' | 'OVERDUE' | 'TEMPORARY_UNBLOCK' | 'BLOCKED'
 
 const STATUS_CONFIG: Record<SubscriptionStatus, {
   show: boolean

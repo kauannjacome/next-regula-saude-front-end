@@ -1,8 +1,10 @@
 import { DefaultSession } from 'next-auth';
-import { SubscriptionStatus } from '@/lib/generated/prisma';
+
+type SubscriptionStatus = 'ACTIVE' | 'OVERDUE' | 'TEMPORARY_UNBLOCK' | 'BLOCKED'
 
 declare module "next-auth" {
   interface Session {
+    accessToken?: string
     user: {
       role?: string | null
       roleDisplayName?: string | null
@@ -40,6 +42,7 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
+    accessToken?: string
     role?: string | null
     roleDisplayName?: string | null
     homePage?: string | null
